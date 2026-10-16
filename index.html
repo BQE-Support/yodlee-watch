@@ -110,6 +110,9 @@ details.panel[open] > summary::before { transform: rotate(90deg); }
 .kpi .l { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
 .kpi.active { border-color: var(--accent); background: var(--accent-soft); }
 .kpi.crit .v { color: var(--critical); } .kpi.warn .v { color: var(--warning); }
+.alerts-panel { border-left: 4px solid var(--warning); }
+.alerts-panel.has-urgent { border-left-color: var(--critical); }
+.alerts-panel > summary #alertCount { font-family: var(--sans); font-weight: 400; margin-left: 6px; }
 .alerts { list-style: none; margin: 10px 0 0; padding: 0; }
 .alerts li { display: grid; grid-template-columns: 22px 92px 1fr; gap: 8px; padding: 9px 0; border-top: 1px solid var(--border); align-items: start; }
 .alerts li:first-child { border-top: 0; }
@@ -211,13 +214,13 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
 
     <div id="banners"></div>
 
-    <section class="panel" id="alertsPanel">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
-        <h2 style="margin:0">Alerts <span class="tiny muted" id="alertCount"></span></h2>
+    <details class="panel alerts-panel" id="alertsPanel">
+      <summary><span id="alertSummary">Alerts</span> <span class="tiny muted" id="alertCount"></span></summary>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
         <label class="tiny muted"><input type="checkbox" id="showDone"> Show ones I've marked done</label>
       </div>
       <ul class="alerts" id="alertList"></ul>
-    </section>
+    </details>
 
     <div class="kpi-grid" id="kpis"></div>
 
@@ -268,7 +271,7 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
 <script>
 (function () {
   "use strict";
-  var VERSION = "1.4";
+  var VERSION = "1.5";
   var CONFIG = {
     REDIRECT_URI: location.origin + location.pathname.replace(/index\.html$/, ""),
     SUPABASE_URL: "https://qevavlolbygnjynyikru.supabase.co",
@@ -490,7 +493,10 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
     var list = alerts.filter(function (a) { return showDone || a.sys || !isDone(a); });
     var open = alerts.filter(function (a) { return !isDone(a); });
     var c = { critical: 0, warning: 0, info: 0 }; open.forEach(function (a) { c[a.sev]++; });
-    $("alertCount").textContent = "(" + c.critical + " urgent, " + c.warning + " to act on, " + c.info + " FYI)";
+    var n = c.critical + c.warning + c.info;
+    $("alertSummary").textContent = n ? n + " alert" + (n === 1 ? "" : "s") + " need" + (n === 1 ? "s" : "") + " attention" : "No alerts right now";
+    $("alertCount").textContent = n ? c.critical + " urgent, " + c.warning + " to act on, " + c.info + " FYI" : "";
+    $("alertsPanel").classList.toggle("has-urgent", c.critical > 0);
     $("alertList").innerHTML = list.length ? list.map(function (a) {
       var d = isDone(a);
       return "<li class='" + (d ? "done" : "") + "'>" + (a.sys ? "<span></span>" : "<input type='checkbox' data-done='" + esc(a.id) + "'" + (d ? " checked" : "") + " title='Mark done (only in your browser)'>") +
