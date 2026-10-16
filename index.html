@@ -268,7 +268,7 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
 <script>
 (function () {
   "use strict";
-  var VERSION = "1.3";
+  var VERSION = "1.4";
   var CONFIG = {
     REDIRECT_URI: location.origin + location.pathname.replace(/index\.html$/, ""),
     SUPABASE_URL: "https://qevavlolbygnjynyikru.supabase.co",
@@ -384,6 +384,8 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
 
   function srOpenish(s) { return s && /^(open|analyzing|view report|pending)$/i.test(s.status || ""); }
   function zdClosed(z) { return z && /^(solved|closed)$/i.test(z.status || ""); }
+  function openWithYodlee(r) { return r.s && r.z && /^(open|analyzing)$/i.test(r.s.status) && !zdClosed(r.z); }
+  function isNewSite(s) { return s && /new site/i.test(s.issue || ""); }
   function ticketLink(z) { return z ? "<a href='" + CONFIG.ZD + esc(z.id) + "' target='_blank' rel='noopener'>#" + esc(z.id) + "</a>" : ""; }
   function srLink(s) { return s ? "<a href='" + CONFIG.ORBITUS + "' target='_blank' rel='noopener' title='Opens the Orbitus Service requests list; search this SR number'>SR " + esc(s.id) + "</a>" : ""; }
 
@@ -427,7 +429,7 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
         srId: s ? +s.id : 0, srStatus: s ? s.status : "", zdId: z ? +z.id : 0, zdStatus: z ? (z.statusLabel || z.status) : "",
         org: (z && z.org) || (s && s.site) || "", ageDays: s ? days(s.createdAt) : days(z && z.createdAt),
         yodleeAgo: s && s.lastYodleeAt ? days(s.lastYodleeAt) : 9999,
-        hay: [s && s.id, z && z.id, z && z.org, s && s.site, s && s.subject, z && z.subject, s && s.customer, z && z.assignee, s && s.status, z && z.statusLabel].join(" ").toLowerCase() };
+        hay: [s && s.id, z && z.id, z && z.org, s && s.site, s && s.subject, s && s.issue, z && z.subject, s && s.customer, z && z.assignee, s && s.status, z && z.statusLabel].join(" ").toLowerCase() };
       rows.push(row);
       flags.forEach(function (f) {
         // done-key includes the facts behind the alert, so a changed situation brings it back
@@ -444,7 +446,9 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
 
   // ---------------- render ----------------
   var KPIS = [
-    { id: "openWithYodlee", label: "Open with Yodlee", test: function (r) { return r.s && r.z && /^(open|analyzing)$/i.test(r.s.status) && !zdClosed(r.z); } },
+    // "Open with Yodlee" is split in two: new site requests get their own tile, everything else stays here.
+    { id: "openWithYodlee", label: "Open with Yodlee", test: function (r) { return openWithYodlee(r) && !isNewSite(r.s); } },
+    { id: "newsite", label: "New site requests (open)", test: function (r) { return openWithYodlee(r) && isNewSite(r.s); } },
     { id: "pending", label: "Waiting on BQE (Pending)", cls: "warn", test: function (r) { return r.flags.some(function (f) { return f.code === "pending"; }); } },
     { id: "resolved", label: "Yodlee resolved, ticket open", cls: "warn", test: function (r) { return r.flags.some(function (f) { return f.code === "resolved"; }); } },
     { id: "replied", label: "Yodlee replied, not passed on", cls: "warn", test: function (r) { return r.flags.some(function (f) { return f.code === "replied"; }); } },
