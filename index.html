@@ -273,7 +273,7 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
 <script>
 (function () {
   "use strict";
-  var VERSION = "1.5";
+  var VERSION = "1.6";
   var CONFIG = {
     REDIRECT_URI: location.origin + location.pathname.replace(/index\.html$/, ""),
     SUPABASE_URL: "https://qevavlolbygnjynyikru.supabase.co",
@@ -314,12 +314,23 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
   function fmtDate(iso) { var t = ms(iso); return t == null ? "" : new Date(t).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
 
   // ---------------- theme ----------------
-  function applyTheme() { var t = load(THEME_KEY); if (t) document.documentElement.setAttribute("data-theme", t); else document.documentElement.removeAttribute("data-theme"); }
+  // The Fine theme is limited to these two accounts. Anyone else only gets light and dark.
+  var FINE_EMAILS = ["fred.daniel@bqe.com", "natasha.gangal@bqe.com"];
+  function fineAllowed() {
+    var e = session && session.user && session.user.email ? String(session.user.email).toLowerCase() : "";
+    return IS_DEV || FINE_EMAILS.indexOf(e) !== -1;
+  }
+  function applyTheme() {
+    var t = load(THEME_KEY);
+    if (t === "fine" && !fineAllowed()) t = null;
+    if (t) document.documentElement.setAttribute("data-theme", t); else document.documentElement.removeAttribute("data-theme");
+  }
   applyTheme();
-  // Cycles light -> dark -> fine -> light.
+  // Cycles light -> dark -> fine -> light (fine is skipped for accounts not on FINE_EMAILS).
   $("themeBtn").addEventListener("click", function () {
     var cur = document.documentElement.getAttribute("data-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    save(THEME_KEY, { light: "dark", dark: "fine", fine: "light" }[cur] || "light"); applyTheme();
+    var next = { light: "dark", dark: fineAllowed() ? "fine" : "light", fine: "light" }[cur] || "light";
+    save(THEME_KEY, next); applyTheme();
   });
 
   // ---------------- auth (Supabase Auth: email + password, or an emailed sign-in link) ----------------
@@ -625,6 +636,7 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
   async function start() {
     $("signin").hidden = true; $("app").hidden = false;
     $("signoutBtn").hidden = IS_DEV;
+    applyTheme();   // session is known now, so the Fine theme can be allowed or dropped
     $("viewer").textContent = IS_DEV ? "Local test data" : (session && session.user ? "Signed in as " + session.user.email : "");
     try { await loadData(); } catch (e) { showError(e); }
   }
