@@ -132,7 +132,40 @@ details.panel[open] > summary::before { transform: rotate(90deg); }
 .pill { appearance: none; font: inherit; font-size: 12px; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-2); cursor: pointer; }
 .pill[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
 .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
-table { border-collapse: collapse; width: 100%; min-width: 980px; }
+table { border-collapse: collapse; width: 100%; min-width: 0; }
+.copy { color: var(--accent); cursor: copy; text-decoration: underline dotted; text-underline-offset: 3px; white-space: nowrap; }
+.copy:hover { text-decoration-style: solid; }
+tr.wait > td { background: var(--warning-soft); }
+tr.wait > td:first-child { box-shadow: inset 4px 0 0 var(--warning); }
+.waitnote { display: inline-block; margin-top: 3px; padding: 1px 7px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #fff; background: var(--warning); }
+tr.reviewed > td { opacity: .55; }
+tr.reviewed > td.rv { opacity: 1; }
+td.rv { min-width: 190px; width: 210px; }
+td.rv label { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--ink-2); cursor: pointer; }
+td.rv textarea { width: 100%; margin-top: 5px; min-height: 44px; resize: vertical; font: inherit; font-size: 12px; padding: 5px 7px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); }
+td.rv .rvmeta { font-size: 11px; color: var(--ink-3); margin-top: 3px; }
+.toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 999px; font-size: 13px; z-index: 50; opacity: 0; pointer-events: none; transition: opacity .15s; }
+.toast.on { opacity: .95; }
+.filterbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 0 0 10px; padding: 7px 12px; border-radius: 8px; background: var(--accent-soft); border: 1px solid var(--accent); font-size: 13px; }
+.abars { display: grid; gap: 6px; }
+.abar { display: grid; grid-template-columns: 150px 1fr 34px; gap: 10px; align-items: center; cursor: pointer; border-radius: 6px; padding: 2px 4px; }
+.abar:hover { background: var(--surface-alt); }
+.abar.on { background: var(--accent-soft); outline: 1px solid var(--accent); }
+.abar .nm { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.abar .tr { display: flex; height: 20px; border-radius: 5px; overflow: hidden; background: var(--surface-alt); }
+.abar .tr span { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; min-width: 0; }
+.abar .tot { font-size: 13px; font-weight: 700; text-align: right; }
+.seg-pending { background: var(--warning); } .seg-open { background: var(--accent); } .seg-resolved { background: var(--good); } .seg-ticket { background: var(--ink-3); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); margin: 0 0 10px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+dialog { border: 1px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--ink); max-width: 860px; width: calc(100% - 32px); padding: 18px 20px; box-shadow: var(--shadow); }
+dialog::backdrop { background: rgba(10,15,30,.5); }
+.dlg-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.dlg-head h2 { margin: 0; }
+table.mini { min-width: 0; font-size: 13px; }
+table.mini th { cursor: default; position: static; }
+table.mini td.n, table.mini th.n { text-align: right; font-variant-numeric: tabular-nums; }
+.delta-up { color: var(--critical); } .delta-down { color: var(--good); }
 th, td { padding: 8px 10px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); }
 thead th { position: sticky; top: 0; background: var(--surface-alt); font-size: 12px; color: var(--ink-2); cursor: pointer; white-space: nowrap; user-select: none; }
 th .arrow { opacity: .35; margin-left: 3px; } th.sorted .arrow { opacity: 1; color: var(--accent); }
@@ -196,12 +229,14 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
           </svg>
           <span class="fine-bubble" id="fineBubble">This is fine.</span>
         </div>
-        <p class="scope-line">Every Yodlee service request (SR) in Orbitus, side by side with the Zendesk ticket that carries its Yodlee Number, plus open Zendesk tickets escalated to Yodlee. Alerts flag status mismatches, replies waiting to be passed on, and requests that have gone quiet.</p>
+        <p class="scope-line">Every Yodlee service request (SR) in Orbitus, side by side with the Zendesk ticket that carries its Yodlee Number, plus open Zendesk tickets escalated to Yodlee. New site requests are kept out of the list and counts. Alerts flag status mismatches, replies waiting to be passed on, and requests that have gone quiet.</p>
       </div>
       <div class="toolbar">
         <span class="snapshot-tag" id="snapTag">Loading...</span>
         <div style="display:flex;gap:8px;align-items:center">
           <span class="tiny muted" id="viewer"></span>
+          <button class="btn" id="weekBtn" title="Last week's numbers (Sunday to Saturday)">Last week</button>
+          <button class="btn" id="statsBtn" title="Week by week trend and the current backlog">Stats</button>
           <button class="btn" id="themeBtn" title="Switch theme: light, dark, fine">Theme</button>
           <button class="btn" id="signoutBtn">Sign out</button>
           <button class="btn primary" id="refreshBtn">Refresh</button>
@@ -222,8 +257,15 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
 
     <div class="kpi-grid" id="kpis"></div>
 
+    <section class="panel" id="assigneePanel">
+      <h2>Volume by assignee <span class="tiny muted" id="assigneeNote"></span></h2>
+      <div class="legend"><span><i class="seg-pending"></i>Waiting on BQE (Pending)</span><span><i class="seg-open"></i>Open with Yodlee</span><span><i class="seg-resolved"></i>Resolved by Yodlee</span><span><i class="seg-ticket"></i>Ticket only, no SR</span></div>
+      <div class="abars" id="assigneeBars"></div>
+    </section>
+
     <section class="panel" id="tableSection">
       <h2>Service requests and tickets</h2>
+      <div class="filterbar" id="filterBar" hidden></div>
       <div class="filters">
         <input class="search" id="search" placeholder="Search SR, ticket, company, bank, subject..." aria-label="Search">
         <span id="statusPills"></span>
@@ -239,6 +281,7 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
           <th data-key="ageDays">Age<span class="arrow">&#8597;</span></th>
           <th data-key="yodleeAgo">Last Yodlee reply<span class="arrow">&#8597;</span></th>
           <th data-key="sev">Alerts<span class="arrow">&#8597;</span></th>
+          <th data-key="rv">Reviewed / notes<span class="arrow">&#8597;</span></th>
         </tr></thead>
         <tbody id="rows"></tbody>
       </table></div>
@@ -258,9 +301,24 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
         <li><b>Status timing.</b> Orbitus keeps no status history, so "since" times are when a pull first saw the status. For SRs that already had their status before Yodlee Watch started, the SR's last-updated time is used.</li>
         <li><b>Alerts.</b> Mismatch: the SR is still Open/Pending in Orbitus but the Zendesk ticket is solved or closed (close the SR or reopen the ticket). Yodlee resolved: Orbitus says Resolved while the ticket is still open (confirm with the customer). Waiting on BQE: Orbitus status Pending. Yodlee replied: Yodlee's latest public reply is newer than the ticket's last update. Gone quiet: no public reply from Yodlee in 7+ days (14+ is red). Business-day timers skip weekends.</li>
         <li><b>Done checkboxes</b> are saved in your browser only; they don't change anything in Orbitus or Zendesk, and an alert comes back if its facts change.</li>
-        <li><b>Orbitus links</b> open the Service requests list (Orbitus has no per-request link). Search the SR number there.</li>
+        <li><b>SR numbers.</b> Click an SR number to copy it, then search it in Orbitus (Orbitus has no per-request link). New site requests are kept out of the list and the counts, except their own tile.</li>
+        <li><b>Reviewed and notes</b> are shared with everyone who can see this board. A Reviewed tick lasts for the rest of that Pacific day; the next morning the row is back for another look and the note stays.</li>
+        <li><b>Reports.</b> Last week and Stats are worked out from the pull's change log (Sunday to Saturday, Pacific). The log starts 2026-10-16 and is kept 60 days, so older weeks are not available.</li>
       </ul>
     </details>
+    <dialog id="repDlg">
+      <div class="dlg-head">
+        <h2 id="repTitle">Last week</h2>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span id="repTabs"><button class="pill" data-tab="week" aria-pressed="true">Last week</button> <button class="pill" data-tab="trend" aria-pressed="false">Trend</button></span>
+          <select id="repWeek" class="search" style="max-width:220px;flex:none"></select>
+          <button class="btn" id="repCopy">Copy stats</button>
+          <button class="btn" id="repClose">Close</button>
+        </div>
+      </div>
+      <div id="repBody"></div>
+    </dialog>
+    <div class="toast" id="toast" role="status"></div>
     <footer>BQE Software · Internal · Yodlee Watch <span id="ver"></span></footer>
   </div>
 </div>
@@ -270,7 +328,7 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
 <script>
 (function () {
   "use strict";
-  var VERSION = "1.7";
+  var VERSION = "1.8";
   var CONFIG = {
     REDIRECT_URI: location.origin + location.pathname.replace(/index\.html$/, ""),
     SUPABASE_URL: "https://qevavlolbygnjynyikru.supabase.co",
@@ -353,13 +411,13 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
     var refresh = { builtAt: null, pcLastCheckIn: new Date().toISOString(), pending: null, cooldownUntil: null, usedToday: 0, maxPerDay: 4, cooldownMin: 15 };
     if (action === "refresh") return { queued: true, refresh: Object.assign(refresh, { pending: { requestedAt: new Date().toISOString(), by: "Dev" } }) };
     var s = await (await fetch("/dev-snapshot")).json();
-    refresh.builtAt = s.builtAt; return { snapshot: s, refresh: refresh };
+    refresh.builtAt = s.builtAt; return { snapshot: s, refresh: refresh, reviews: {} };
   }
 
   // ---------------- data + alerts ----------------
-  var snap = null, refreshInfo = null, etag = null, rows = [], alerts = [];
+  var snap = null, refreshInfo = null, etag = null, rows = [], alerts = [], nsrRows = [], closedRows = [], reviews = {}, saveTimers = {}, rvSig = "", rerenderLater = false;
   var done = load(DONE_KEY) || {};
-  var ui = { search: "", kpi: null, status: null, sortKey: "sev", sortDir: -1, expanded: {} };
+  var ui = { search: "", kpi: null, status: null, assignee: null, sortKey: "sev", sortDir: -1, expanded: {} };
   var SEV = { critical: 3, warning: 2, info: 1 };
 
   function srOpenish(s) { return s && /^(open|analyzing|view report|pending)$/i.test(s.status || ""); }
@@ -367,10 +425,23 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
   function openWithYodlee(r) { return r.s && r.z && /^(open|analyzing)$/i.test(r.s.status) && !zdClosed(r.z); }
   function isNewSite(s) { return s && /new site/i.test(s.issue || ""); }
   function ticketLink(z) { return z ? "<a href='" + CONFIG.ZD + esc(z.id) + "' target='_blank' rel='noopener'>#" + esc(z.id) + "</a>" : ""; }
-  function srLink(s) { return s ? "<a href='" + CONFIG.ORBITUS + "' target='_blank' rel='noopener' title='Opens the Orbitus Service requests list; search this SR number'>SR " + esc(s.id) + "</a>" : ""; }
+  // Orbitus has no per-request link, so the SR number is a copy button (search it in Orbitus).
+  function srLink(s) { return s ? "<a href='#' class='copy' data-copy='" + esc(s.id) + "' title='Click to copy the SR number'>SR " + esc(s.id) + "</a>" : ""; }
+  var toastTimer = null;
+  function toast(msg) { var t = $("toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("on"); }, 1600); }
+  function copyText(text, okMsg) {
+    function fallback() {
+      var ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand("copy"); } catch (e) {} document.body.removeChild(ta); toast(ok ? okMsg : "Couldn't copy"); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { toast(okMsg); }, fallback); else fallback();
+  }
+  document.addEventListener("click", function (e) {
+    var c = e.target.closest("[data-copy]"); if (!c) return;
+    e.preventDefault(); copyText(c.getAttribute("data-copy"), "Copied " + c.getAttribute("data-copy"));
+  });
 
   function buildRows() {
-    rows = []; alerts = [];
+    rows = []; alerts = []; nsrRows = [];
     var byTicket = {};
     (snap.pairs || []).forEach(function (p) { if (p.zd) (byTicket[p.zd.id] = byTicket[p.zd.id] || []).push(p.sr ? p.sr.id : null); });
     (snap.pairs || []).forEach(function (p) {
@@ -407,9 +478,12 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
       var key = (s ? "sr:" + s.id : "") + (z ? "|zd:" + z.id : "");
       var row = { key: key, s: s, z: z, flags: flags, sev: maxSev,
         srId: s ? +s.id : 0, srStatus: s ? s.status : "", zdId: z ? +z.id : 0, zdStatus: z ? (z.statusLabel || z.status) : "",
+        assignee: z ? (z.assignee || "Unassigned") : "No ticket",
         org: (z && z.org) || (s && s.site) || "", ageDays: s ? days(s.createdAt) : days(z && z.createdAt),
         yodleeAgo: s && s.lastYodleeAt ? days(s.lastYodleeAt) : 9999,
         hay: [s && s.id, z && z.id, z && z.org, s && s.site, s && s.subject, s && s.issue, z && z.subject, s && s.customer, z && z.assignee, s && s.status, z && z.statusLabel].join(" ").toLowerCase() };
+      // New site requests are tracked apart: not in the list, the alerts or the counts (except their own tile)
+      if (isNewSite(s)) { nsrRows.push(row); return; }
       rows.push(row);
       flags.forEach(function (f) {
         // done-key includes the facts behind the alert, so a changed situation brings it back
@@ -417,6 +491,7 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
         alerts.push({ id: key + "#" + f.code, facts: facts, sev: f.sev, text: f.text, row: row });
       });
     });
+    buildClosed();
     var h = snap.health || {};
     if (h.yodlee === "code_required") alerts.unshift({ id: "sys:code", sys: true, sev: "critical", text: "<b>Yodlee needs a new sign-in code.</b> The last pull couldn't sign in because Yodlee stopped remembering the sync PC. The admin needs to sign in to Yodlee again on that PC. SR data below is from the last good pull." });
     else if (h.yodlee && h.yodlee !== "ok") alerts.unshift({ id: "sys:yodlee", sys: true, sev: "critical", text: "<b>The last pull couldn't reach Yodlee</b> (VPN off or Yodlee down). SR data below is from the last good pull; Zendesk statuses are current." });
@@ -424,22 +499,45 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
     alerts.sort(function (a, b) { return SEV[b.sev] - SEV[a.sev] || (b.sys ? 1 : 0) - (a.sys ? 1 : 0); });
   }
 
+  // SRs that left the Orbitus list (Closed or Auto Closed): the pull keeps their last known row for 90 days; the change log fills in older ones.
+  function buildClosed() {
+    closedRows = [];
+    var live = {}, seen = {};
+    (snap.pairs || []).forEach(function (p) { if (p.sr) live[p.sr.id] = 1; });
+    function add(c) {
+      if (!c || !c.id || live[c.id] || seen[c.id]) return; seen[c.id] = 1;
+      if (isNewSite(c)) return;
+      var t = ms(c.closedAt); if (t != null && t < Date.now() - 90 * 86400000) return;
+      var sr = Object.assign({}, c, { status: "Closed", statusSince: c.closedAt });
+      closedRows.push({ key: "closed:" + c.id, s: sr, z: null, flags: [], sev: 0, srId: +c.id, srStatus: "Closed", zdId: 0, zdStatus: "",
+        assignee: "No ticket", org: c.site || c.customer || "", ageDays: c.createdAt ? days(c.createdAt) : null, yodleeAgo: c.lastYodleeAt ? days(c.lastYodleeAt) : 9999,
+        hay: [c.id, c.site, c.subject, c.issue, c.customer, "closed"].join(" ").toLowerCase() });
+    }
+    (snap.closed || []).forEach(add);
+    (snap.events || []).filter(function (e) { return e.kind === "sr_gone" && e.sr; }).forEach(function (e) { add({ id: e.sr, closedAt: e.at }); });
+    closedRows.sort(function (a, b) { return ms(b.s.closedAt) - ms(a.s.closedAt); });
+  }
+
   // ---------------- render ----------------
   var KPIS = [
-    // "Open with Yodlee" is split in two: new site requests get their own tile, everything else stays here.
-    { id: "openWithYodlee", label: "Open with Yodlee", test: function (r) { return openWithYodlee(r) && !isNewSite(r.s); } },
-    { id: "newsite", label: "New site requests (open)", test: function (r) { return openWithYodlee(r) && isNewSite(r.s); } },
-    { id: "pending", label: "Waiting on BQE (Pending)", cls: "warn", test: function (r) { return r.flags.some(function (f) { return f.code === "pending"; }); } },
+    { id: "openWithYodlee", label: "Open with Yodlee", test: openWithYodlee },
+    // Orbitus Pending means Yodlee is waiting on BQE, whatever state the Zendesk ticket is in
+    { id: "pending", label: "Waiting on BQE (Pending)", cls: "warn", test: function (r) { return r.s && /^pending$/i.test(r.s.status); } },
+    { id: "resolvedSr", label: "Resolved SRs", test: function (r) { return r.s && /^resolved$/i.test(r.s.status); } },
+    { id: "closedSr", label: "Closed SRs (last 90 days)", base: "closed", test: function () { return true; } },
     { id: "resolved", label: "Yodlee resolved, ticket open", cls: "warn", test: function (r) { return r.flags.some(function (f) { return f.code === "resolved"; }); } },
     { id: "replied", label: "Yodlee replied, not passed on", cls: "warn", test: function (r) { return r.flags.some(function (f) { return f.code === "replied"; }); } },
-    { id: "mismatch", label: "Status mismatch", cls: "crit", test: function (r) { return r.flags.some(function (f) { return f.code === "mismatch" || f.code === "gone"; }); } },
     { id: "quiet", label: "No Yodlee reply 7+ days", cls: "warn", test: function (r) { return r.flags.some(function (f) { return f.code === "quiet"; }); } },
     { id: "old", label: "Open 30+ days", test: function (r) { return r.s && srOpenish(r.s) && !zdClosed(r.z) && r.ageDays >= 30; } },
-    { id: "unlinked", label: "No Zendesk ticket", test: function (r) { return r.flags.some(function (f) { return f.code === "unlinked" || f.code === "nonumber"; }); } }
+    { id: "unlinked", label: "No Zendesk ticket", test: function (r) { return r.flags.some(function (f) { return f.code === "unlinked" || f.code === "nonumber"; }); } },
+    // new site requests are kept out of the list and every other count; this tile is the only place they show
+    { id: "newsite", label: "New site requests (open)", base: "nsr", test: openWithYodlee }
   ];
+  function kpiTest(id) { return KPIS.filter(function (k) { return k.id === id; })[0].test; }
+  function baseRows(k) { return k && k.base === "closed" ? closedRows : k && k.base === "nsr" ? nsrRows : rows; }
 
   function render() {
-    renderTag(); renderBanners(); renderAlerts(); renderKpis(); renderTable(); renderEvents();
+    renderTag(); renderBanners(); renderAlerts(); renderKpis(); renderAssignees(); renderTable(); renderEvents();
   }
   function renderTag() {
     var t = snap && snap.builtAt;
@@ -492,7 +590,7 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
 
   function renderKpis() {
     $("kpis").innerHTML = KPIS.map(function (k) {
-      var n = rows.filter(k.test).length;
+      var n = baseRows(k).filter(k.test).length;
       return "<button class='kpi " + (n && k.cls ? k.cls : "") + (ui.kpi === k.id ? " active" : "") + "' data-kpi='" + k.id + "'><div class='v'>" + n + "</div><div class='l'>" + esc(k.label) + "</div></button>";
     }).join("");
   }
@@ -502,13 +600,91 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
     renderKpis(); renderTable(); $("tableSection").scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
+  // ---------------- volume by assignee ----------------
+  function segOf(r) { if (!r.s) return "ticket"; if (/^pending$/i.test(r.s.status)) return "pending"; if (/^resolved$/i.test(r.s.status)) return "resolved"; return "open"; }
+  function assigneeGroups() {
+    var g = {};
+    rows.forEach(function (r) { var o = g[r.assignee] = g[r.assignee] || { pending: 0, open: 0, resolved: 0, ticket: 0, total: 0 }; o[segOf(r)]++; o.total++; });
+    return g;
+  }
+  function renderAssignees() {
+    var g = assigneeGroups(), names = Object.keys(g).sort(function (a, b) { return g[b].total - g[a].total || a.localeCompare(b); });
+    var max = names.length ? g[names[0]].total : 1;
+    $("assigneeNote").textContent = "Zendesk ticket assignee, new site requests left out. Click a bar to filter the list.";
+    $("assigneeBars").innerHTML = names.length ? names.map(function (n) {
+      var o = g[n];
+      var segs = ["pending", "open", "resolved", "ticket"].filter(function (k) { return o[k]; }).map(function (k) { return "<span class='seg-" + k + "' style='flex:" + o[k] + "' title='" + o[k] + " " + k + "'>" + o[k] + "</span>"; }).join("");
+      return "<div class='abar" + (ui.assignee === n ? " on" : "") + "' data-as='" + esc(n) + "'><div class='nm' title='" + esc(n) + "'>" + esc(n) + "</div><div class='tr' style='width:" + Math.max(4, o.total / max * 100) + "%'>" + segs + "</div><div class='tot'>" + o.total + "</div></div>";
+    }).join("") : "<div class='muted'>Nothing to chart yet.</div>";
+  }
+  $("assigneeBars").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-as]"); if (!b) return;
+    var n = b.getAttribute("data-as"); ui.assignee = ui.assignee === n ? null : n;
+    renderAssignees(); renderTable(); if (ui.assignee) $("tableSection").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  // ---------------- shared Reviewed + notes ----------------
+  // Saved through the yodlee function, so everyone on the board sees them. A Reviewed tick lasts until the end of that Pacific day.
+  var ptDay = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles", year: "numeric", month: "2-digit", day: "2-digit" });
+  function rvOf(key) {
+    var r = reviews[key]; if (!r) return { reviewed: false, note: "", lapsed: false };
+    var on = !!r.reviewed && !!r.rat && ptDay.format(new Date(r.rat)) === ptDay.format(new Date());
+    return { reviewed: on, lapsed: !!r.reviewed && !on, note: r.note || "", by: r.by, at: r.at, rat: r.rat };
+  }
+  function rvMeta(v) {
+    if (v.reviewed) return "Reviewed by " + esc(v.by || "someone") + ", " + esc(ago(v.rat));
+    if (v.lapsed) return "Reviewed " + esc(fmtDate(v.rat)) + " by " + esc(v.by || "someone") + ". Back for another look today.";
+    if (v.note && v.by) return "Note by " + esc(v.by) + ", " + esc(ago(v.at));
+    return "";
+  }
+  function rvCell(r) {
+    var v = rvOf(r.key);
+    return "<td class='rv'><label><input type='checkbox' data-rv='" + esc(r.key) + "'" + (v.reviewed ? " checked" : "") + "> Reviewed</label>" +
+      "<textarea data-rvnote='" + esc(r.key) + "' placeholder='Add a note...' maxlength='4000'>" + esc(v.note) + "</textarea><div class='rvmeta'>" + rvMeta(v) + "</div></td>";
+  }
+  function saveReview(key, body) {
+    if (IS_DEV) return Promise.resolve();
+    return BQEBoard.api("yodlee?action=review", { method: "POST", body: Object.assign({ id: key }, body) }).catch(showError);
+  }
+  function viewerName() { return IS_DEV ? "Dev" : (session && session.name) || ""; }
+  $("rows").addEventListener("change", function (e) {
+    var key = e.target.getAttribute("data-rv"); if (!key) return;
+    var val = e.target.checked, now = new Date().toISOString(), cur = reviews[key] || {};
+    reviews[key] = { reviewed: val, rat: val ? now : null, note: cur.note || "", by: viewerName(), at: now };
+    var tr = e.target.closest("tr"); if (tr) { tr.classList.toggle("reviewed", val); var m = tr.querySelector(".rvmeta"); if (m) m.innerHTML = rvMeta(rvOf(key)); }
+    saveReview(key, { reviewed: val });
+  });
+  $("rows").addEventListener("input", function (e) {
+    var key = e.target.getAttribute("data-rvnote"); if (!key) return;
+    var cur = reviews[key] || {}, text = e.target.value;
+    reviews[key] = Object.assign({}, cur, { note: text, by: viewerName(), at: new Date().toISOString() });
+    clearTimeout(saveTimers[key]);
+    saveTimers[key] = setTimeout(function () { delete saveTimers[key]; saveReview(key, { note: text }); }, 800);
+  });
+  function isTypingNote() { var a = document.activeElement; return !!(a && a.hasAttribute && a.hasAttribute("data-rvnote")); }
+  $("rows").addEventListener("focusout", function () { setTimeout(function () { if (rerenderLater && !isTypingNote()) { rerenderLater = false; renderTable(); } }, 0); });
+  function mergeReviews(incoming) {
+    if (!incoming) return false;
+    var sig = JSON.stringify(incoming); if (sig === rvSig) return false; rvSig = sig;
+    Object.keys(incoming).forEach(function (k) { if (!saveTimers[k]) reviews[k] = incoming[k]; });
+    return true;
+  }
+
   var STATUS_PILLS = ["Open", "Pending", "Resolved"];
   function renderTable() {
     $("statusPills").innerHTML = STATUS_PILLS.map(function (s) { return "<button class='pill' data-st='" + s + "' aria-pressed='" + (ui.status === s) + "'>Orbitus: " + s + "</button>"; }).join(" ");
-    $("clearFilter").hidden = !ui.kpi && !ui.status && !ui.search;
+    $("clearFilter").hidden = !ui.kpi && !ui.status && !ui.search && !ui.assignee;
     var q = ui.search.toLowerCase().trim(), k = KPIS.filter(function (x) { return x.id === ui.kpi; })[0];
-    var list = rows.filter(function (r) {
+    var fb = [];
+    if (k) fb.push("<b>" + esc(k.label) + "</b>");
+    if (ui.assignee) fb.push("assignee <b>" + esc(ui.assignee) + "</b>");
+    if (ui.status) fb.push("Orbitus <b>" + esc(ui.status) + "</b>");
+    $("filterBar").hidden = !fb.length; $("filterBar").innerHTML = "Filtered to: " + fb.join(" &middot; ");
+    var base = baseRows(k);
+    base.forEach(function (r) { r.rv = rvOf(r.key).reviewed ? 1 : 0; });
+    var list = base.filter(function (r) {
       if (k && !k.test(r)) return false;
+      if (ui.assignee && r.assignee !== ui.assignee) return false;
       if (ui.status && !(r.s && r.s.status.toLowerCase() === ui.status.toLowerCase())) return false;
       return !q || r.hay.indexOf(q) >= 0;
     });
@@ -525,21 +701,22 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
     $("rows").innerHTML = list.map(function (r) {
       var s = r.s, z = r.z;
       var chips = r.flags.map(function (f) { return "<span class='chip " + f.sev + "'>" + ({ mismatch: "Mismatch", resolved: "Yodlee resolved", pending: "Waiting on BQE", replied: "Yodlee replied", quiet: "Quiet", unlinked: "No ticket", old: "30+ days", gone: "Not in Orbitus", nonumber: "No Yodlee #", multi: "Several SRs" }[f.code]) + "</span>"; }).join(" ");
-      var html = "<tr data-row='" + esc(r.key) + "'>" +
+      var rvNow = rvOf(r.key).reviewed, waiting = s && /^pending$/i.test(s.status);
+      var html = "<tr data-row='" + esc(r.key) + "' class='" + (waiting ? "wait " : "") + (rvNow ? "reviewed" : "") + "'>" +
         "<td>" + (s ? srLink(s) + "<div class='tiny muted'>" + esc((s.issue || "").replace("Link / Add Account or Refresh Related", "Link/refresh")) + "</div>" : "<span class='muted'>none</span>") + "</td>" +
-        "<td>" + (s ? "<span class='st " + esc(s.status.toLowerCase().replace(/\s+/g, "")) + "'>" + esc(s.status) + "</span><div class='tiny muted'>since " + esc(fmtDate(s.statusSince)) + "</div>" : "") + "</td>" +
+        "<td>" + (s ? "<span class='st " + esc(s.status.toLowerCase().replace(/\s+/g, "")) + "'>" + esc(s.status) + "</span>" + (waiting ? "<br><span class='waitnote'>Waiting on BQE</span>" : "") + "<div class='tiny muted'>since " + esc(fmtDate(s.statusSince)) + "</div>" : "") + "</td>" +
         "<td>" + (z ? ticketLink(z) + "<div class='tiny muted'>" + esc(z.assignee || "Unassigned") + "</div>" : "<span class='muted'>none</span>") + "</td>" +
         "<td>" + (z ? "<span class='st " + esc((z.status || "").toLowerCase()) + "'>" + esc(z.statusLabel || z.status) + "</span><div class='tiny muted'>updated " + esc(ago(z.updatedAt)) + "</div>" : "") + "</td>" +
         "<td>" + esc((z && z.org) || (s && s.customer) || "") + "<div class='tiny muted'>" + esc(s ? (s.site || "") + (s.errorCode ? " &middot; error " + s.errorCode : "") : "") + "</div></td>" +
         "<td>" + (r.ageDays != null ? Math.floor(r.ageDays) + "d" : "") + "</td>" +
         "<td>" + (s && s.lastYodleeAt ? esc(ago(s.lastYodleeAt)) + (s.lastYodleeText ? " <span class='toggle' data-exp='" + esc(r.key) + "'>" + (ui.expanded[r.key] ? "hide" : "read") + "</span>" : "") : "<span class='muted'>none</span>") + "</td>" +
-        "<td>" + chips + "</td></tr>";
-      if (ui.expanded[r.key] && s) html += "<tr class='expand'><td colspan='8'><div class='tiny'><b>Yodlee (" + esc(s.lastYodleeBy || "") + ", " + esc(fmtDate(s.lastYodleeAt)) + "):</b> " + esc(s.lastYodleeText || "") + "</div>" +
+        "<td>" + chips + "</td>" + rvCell(r) + "</tr>";
+      if (ui.expanded[r.key] && s) html += "<tr class='expand'><td colspan='9'><div class='tiny'><b>Yodlee (" + esc(s.lastYodleeBy || "") + ", " + esc(fmtDate(s.lastYodleeAt)) + "):</b> " + esc(s.lastYodleeText || "") + "</div>" +
         (s.lastNote ? "<div class='tiny muted' style='margin-top:4px'><b>Latest BQE internal note (" + esc(fmtDate(s.lastNoteAt)) + "):</b> " + esc(s.lastNote) + "</div>" : "") +
         "<div class='tiny muted' style='margin-top:4px'>" + esc(s.subject || "") + " &middot; created by " + esc(s.createdBy || "") + " " + esc(fmtDate(s.createdAt)) + (r.z && r.z.subject ? " &middot; ticket: " + esc(r.z.subject) : "") + "</div></td></tr>";
       return html;
     }).join("");
-    $("rowCount").textContent = "Showing " + list.length + " of " + rows.length + (k ? " (filter: " + k.label + ")" : "");
+    $("rowCount").textContent = "Showing " + list.length + " of " + base.length + (k ? " (filter: " + k.label + ")" : "") + (k && k.base === "nsr" ? "" : ". New site requests are not counted.");
   }
   $("rows").addEventListener("click", function (e) {
     var t = e.target.closest("[data-exp]"); if (!t) return;
@@ -555,7 +732,7 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
     var s = b.getAttribute("data-st"); ui.status = ui.status === s ? null : s; renderTable();
   });
   $("search").addEventListener("input", function (e) { ui.search = e.target.value; renderTable(); });
-  $("clearFilter").addEventListener("click", function () { ui.kpi = null; ui.status = null; ui.search = ""; $("search").value = ""; renderKpis(); renderTable(); });
+  $("clearFilter").addEventListener("click", function () { ui.kpi = null; ui.status = null; ui.assignee = null; ui.search = ""; $("search").value = ""; renderKpis(); renderAssignees(); renderTable(); });
 
   function renderEvents() {
     var cut = Date.now() - 7 * 86400000;
@@ -568,11 +745,108 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
     }).join("") : "<li><span></span><div class='muted'>No changes recorded in the last 7 days yet. Changes are detected by comparing each pull with the one before.</div></li>";
   }
 
+  // ---------------- Last week / Stats ----------------
+  // Worked out in the page from the pull's change log (events), Sunday to Saturday in Pacific time.
+  var REP = { tab: "week", week: null, text: "" };
+  function ymdPT(t) { return ptDay.format(new Date(t)); }
+  function addDays(ymd, n) { var d = new Date(ymd + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+  function sundayOf(ymd) { var d = new Date(ymd + "T12:00:00Z"); return addDays(ymd, -d.getUTCDay()); }
+  function dayLabel(ymd) { return new Date(ymd + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }); }
+  function weekLabel(sun) { return dayLabel(sun) + " to " + dayLabel(addDays(sun, 6)); }
+  var METRICS = [
+    { id: "new", label: "New SRs", test: function (e) { return e.kind === "sr_new"; } },
+    { id: "pending", label: "Went Pending (waiting on BQE)", test: function (e) { return e.kind === "sr_status" && /^pending$/i.test(e.to || ""); } },
+    { id: "resolved", label: "Marked Resolved by Yodlee", test: function (e) { return e.kind === "sr_status" && /^resolved$/i.test(e.to || ""); } },
+    { id: "closed", label: "Closed (left Orbitus)", test: function (e) { return e.kind === "sr_gone"; } },
+    { id: "replies", label: "Yodlee replies", test: function (e) { return e.kind === "yodlee_reply"; } },
+    { id: "solved", label: "Linked tickets solved", test: function (e) { return e.kind === "zd_status" && /^(solved|closed)/i.test(e.to || ""); } }
+  ];
+  function nsrIdSet() {
+    var o = {}; nsrRows.forEach(function (r) { if (r.s) o[r.s.id] = 1; });
+    (snap.closed || []).forEach(function (c) { if (isNewSite(c)) o[c.id] = 1; });
+    return o;
+  }
+  function weekEvents(sun) {
+    var nsr = nsrIdSet();
+    return (snap.events || []).filter(function (e) { var t = ms(e.at); return t != null && sundayOf(ymdPT(t)) === sun && !(e.sr && nsr[e.sr]); });
+  }
+  function weekCounts(sun) { var ev = weekEvents(sun), o = {}; METRICS.forEach(function (m) { o[m.id] = ev.filter(m.test).length; }); return o; }
+  function lastWeekSun() { return addDays(sundayOf(ymdPT(Date.now())), -7); }
+  function logStart() { var t = (snap.events || []).reduce(function (m, e) { var x = ms(e.at); return x != null && x < m ? x : m; }, Infinity); return t === Infinity ? null : ymdPT(t); }
+  function median(a) { if (!a.length) return null; a = a.slice().sort(function (x, y) { return x - y; }); var m = Math.floor(a.length / 2); return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2; }
+  function backlogLines() {
+    var live = rows.filter(function (r) { return r.s && srOpenish(r.s); });
+    var ages = live.map(function (r) { return r.ageDays; }).filter(function (x) { return x != null; });
+    var g = assigneeGroups();
+    return { counts: [["Open with Yodlee", rows.filter(openWithYodlee).length], ["Waiting on BQE (Pending)", rows.filter(function (r) { return r.s && /^pending$/i.test(r.s.status); }).length],
+      ["Resolved SRs", rows.filter(function (r) { return r.s && /^resolved$/i.test(r.s.status); }).length], ["Closed in the last 90 days", closedRows.length],
+      ["Open 30+ days", rows.filter(kpiTest("old")).length], ["No Zendesk ticket", rows.filter(kpiTest("unlinked")).length],
+      ["Median age of open SRs (days)", ages.length ? Math.round(median(ages)) : "n/a"], ["Oldest open SR (days)", ages.length ? Math.round(Math.max.apply(null, ages)) : "n/a"]], byAssignee: g };
+  }
+  function tableHtml(head, body) {
+    return "<div class='table-wrap'><table class='mini'><thead><tr>" + head.map(function (h, i) { return "<th class='" + (i ? "n" : "") + "'>" + esc(h) + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      body.map(function (r) { return "<tr>" + r.map(function (c, i) { return "<td class='" + (i ? "n" : "") + "'>" + c + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>";
+  }
+  function delta(a, b) { var d = a - b; return d === 0 ? "0" : "<span class='" + (d > 0 ? "delta-up" : "delta-down") + "'>" + (d > 0 ? "+" : "") + d + "</span>"; }
+  function renderReport() {
+    if (!snap) { $("repBody").innerHTML = "<p class='muted'>No data yet.</p>"; return; }
+    var txt = [], html = "", ls = logStart(), bl = backlogLines();
+    var sel = $("repWeek"), last = lastWeekSun();
+    if (!sel.options.length) { for (var i = 0; i < 8; i++) { var w = addDays(last, -7 * i), o = document.createElement("option"); o.value = w; o.textContent = (i === 0 ? "Last week: " : "") + weekLabel(w); sel.appendChild(o); } }
+    document.querySelectorAll("#repTabs [data-tab]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-tab") === REP.tab)); });
+    sel.hidden = REP.tab !== "week";
+    if (REP.tab === "week") {
+      var wk = REP.week || last; sel.value = wk;
+      var cur = weekCounts(wk), prev = weekCounts(addDays(wk, -7));
+      $("repTitle").textContent = (wk === last ? "Last week" : "Week") + ": " + weekLabel(wk);
+      txt.push("Yodlee Watch, " + weekLabel(wk) + " (Sunday to Saturday, Pacific)");
+      html += tableHtml(["", "This week", "Week before", "Change"], METRICS.map(function (m) { txt.push(m.label + ": " + cur[m.id] + " (week before " + prev[m.id] + ")"); return [esc(m.label), cur[m.id], prev[m.id], delta(cur[m.id], prev[m.id])]; }));
+      if (ls && ls > wk) html += "<p class='tiny muted'>The change log starts " + esc(dayLabel(ls)) + ", so this week has no data.</p>";
+      else if (ls && ls > addDays(wk, -1)) html += "<p class='tiny muted'>The change log starts " + esc(dayLabel(ls)) + ", so this week is partial.</p>";
+      var ev = weekEvents(wk).filter(function (e) { return e.kind === "sr_new" || e.kind === "sr_gone" || (e.kind === "sr_status" && /^(resolved|pending)$/i.test(e.to || "")); }).sort(function (a, b) { return ms(a.at) - ms(b.at); });
+      html += "<h3 style='margin:14px 0 6px;font-size:15px'>New, pending, resolved and closed SRs</h3>";
+      if (ev.length) {
+        html += "<ul class='events'>" + ev.map(function (e) {
+          var what = { sr_new: "New SR", sr_gone: "Closed", sr_status: e.to }[e.kind];
+          txt.push("  " + fmtDate(e.at) + " SR " + e.sr + ": " + what);
+          return "<li><span class='tiny muted'>" + esc(fmtDate(e.at)) + "</span><div><b>" + esc(what) + "</b> " + srLink({ id: e.sr }) + (e.kind === "sr_new" && e.text ? "<div class='reply'>" + esc(e.text) + "</div>" : "") + "</div></li>";
+        }).join("") + "</ul>";
+      } else html += "<p class='tiny muted'>Nothing recorded.</p>";
+    } else {
+      $("repTitle").textContent = "Stats";
+      var weeks = []; for (var j = 0; j < 8; j++) weeks.push(addDays(last, -7 * j));
+      txt.push("Yodlee Watch trend, last 8 complete weeks (Sunday to Saturday, Pacific)");
+      html += "<h3 style='margin:0 0 6px;font-size:15px'>Week by week</h3>" + tableHtml(["Week"].concat(METRICS.map(function (m) { return m.label; })), weeks.map(function (w) {
+        var c = weekCounts(w), noData = ls && addDays(w, 6) < ls;
+        txt.push(weekLabel(w) + (noData ? ": no data" : ": " + METRICS.map(function (m) { return m.label + " " + c[m.id]; }).join(", ")));
+        return [esc(weekLabel(w)) + (!noData && ls && ls > addDays(w, -1) ? " <span class='tiny muted'>(partial)</span>" : "")].concat(METRICS.map(function (m) { return noData ? "<span class='muted'>-</span>" : c[m.id]; }));
+      }));
+    }
+    html += "<h3 style='margin:14px 0 6px;font-size:15px'>Right now</h3>" + tableHtml(["", "Count"], bl.counts.map(function (c) { txt.push(c[0] + ": " + c[1]); return [esc(c[0]), c[1]]; }));
+    var names = Object.keys(bl.byAssignee).sort(function (a, b) { return bl.byAssignee[b].total - bl.byAssignee[a].total || a.localeCompare(b); });
+    html += "<h3 style='margin:14px 0 6px;font-size:15px'>By assignee</h3>" + tableHtml(["Assignee", "Waiting on BQE", "Open with Yodlee", "Resolved", "Ticket only", "Total"], names.map(function (n) {
+      var o = bl.byAssignee[n]; txt.push(n + ": " + o.total + " (waiting on BQE " + o.pending + ", open " + o.open + ", resolved " + o.resolved + ", ticket only " + o.ticket + ")");
+      return [esc(n), o.pending, o.open, o.resolved, o.ticket, "<b>" + o.total + "</b>"];
+    }));
+    html += "<p class='tiny muted' style='margin-top:10px'>Weekly counts come from the pull's change log: it starts 2026-10-16, is kept 60 days, and is compared pull to pull (every 12 hours), so something that opened and closed between two pulls is not seen. New site requests are left out.</p>";
+    $("repBody").innerHTML = html; REP.text = txt.join("\n");
+  }
+  function openReport(tab) { REP.tab = tab; REP.week = null; $("repWeek").innerHTML = ""; renderReport(); if (!$("repDlg").open) $("repDlg").showModal(); }
+  $("weekBtn").addEventListener("click", function () { openReport("week"); });
+  $("statsBtn").addEventListener("click", function () { openReport("trend"); });
+  $("repClose").addEventListener("click", function () { $("repDlg").close(); });
+  $("repDlg").addEventListener("click", function (e) { if (e.target === $("repDlg")) $("repDlg").close(); });
+  $("repWeek").addEventListener("change", function (e) { REP.week = e.target.value; renderReport(); });
+  $("repCopy").addEventListener("click", function () { copyText(REP.text, "Stats copied"); });
+  $("repTabs").addEventListener("click", function (e) { var b = e.target.closest("[data-tab]"); if (!b) return; REP.tab = b.getAttribute("data-tab"); renderReport(); });
+
   // ---------------- load / refresh ----------------
   async function loadData() {
     var r = await api("GET");
     refreshInfo = r.refresh || refreshInfo;
-    if (r.snapshot && r.snapshot !== "unchanged") { snap = r.snapshot; buildRows(); render(); }
+    var rvChanged = mergeReviews(r.reviews);
+    if (r.snapshot && r.snapshot !== "unchanged") { snap = r.snapshot; buildRows(); if (isTypingNote()) rerenderLater = true; else render(); }
+    else if (snap && rvChanged) { if (isTypingNote()) rerenderLater = true; else renderTable(); renderTag(); }
     else if (!snap) { $("snapTag").textContent = "No data yet: waiting for the first pull from the sync PC."; renderRefresh(); }
     else { renderTag(); }
     schedulePendingCheck();
