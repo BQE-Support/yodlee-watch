@@ -143,10 +143,13 @@ tr.wait > td:first-child { box-shadow: inset 4px 0 0 var(--warning); }
 .waitnote { display: inline-block; margin-top: 3px; padding: 1px 7px; border-radius: 6px; font-size: 11px; font-weight: 700; color: #fff; background: var(--warning); }
 tr.reviewed > td { opacity: .55; }
 tr.reviewed > td.rv { opacity: 1; }
-td.rv { min-width: 190px; width: 210px; }
-td.rv label { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--ink-2); cursor: pointer; }
-td.rv textarea { width: 100%; margin-top: 5px; min-height: 44px; resize: vertical; font: inherit; font-size: 12px; padding: 5px 7px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); }
-td.rv .rvmeta { font-size: 11px; color: var(--ink-3); margin-top: 3px; }
+tr.hasrv > td { border-bottom: 0; }
+tr.rvrow > td { padding-top: 0; padding-bottom: 10px; }
+tr.wait > td, tr.rvrow.wait > td { background: var(--warning-soft); }
+.rvline { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+.rvline label { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--ink-2); cursor: pointer; padding-top: 5px; white-space: nowrap; }
+.rvline textarea { flex: 1 1 320px; min-height: 30px; height: 30px; resize: vertical; font: inherit; font-size: 12px; padding: 5px 7px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); }
+.rvline .rvmeta { font-size: 11px; color: var(--ink-3); padding-top: 7px; flex: 0 1 260px; }
 .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 16px; border-radius: 999px; font-size: 13px; z-index: 50; opacity: 0; pointer-events: none; transition: opacity .15s; }
 .toast.on { opacity: .95; }
 .filterbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 0 0 10px; padding: 7px 12px; border-radius: 8px; background: var(--accent-soft); border: 1px solid var(--accent); font-size: 13px; }
@@ -284,7 +287,6 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
           <th data-key="ageDays">Age<span class="arrow">&#8597;</span></th>
           <th data-key="yodleeAgo">Last Yodlee reply<span class="arrow">&#8597;</span></th>
           <th data-key="sev">Alerts<span class="arrow">&#8597;</span></th>
-          <th data-key="rv">Reviewed / notes<span class="arrow">&#8597;</span></th>
         </tr></thead>
         <tbody id="rows"></tbody>
       </table></div>
@@ -643,11 +645,12 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
     if (v.note && v.by) return "Note by " + esc(v.by) + ", " + esc(ago(v.at));
     return "";
   }
-  function rvCell(r) {
+  function rvRow(r, cls) {
     var v = rvOf(r.key);
-    return "<td class='rv'><label><input type='checkbox' data-rv='" + esc(r.key) + "'" + (v.reviewed ? " checked" : "") + "> Reviewed</label>" +
-      "<textarea data-rvnote='" + esc(r.key) + "' placeholder='Add a note...' maxlength='4000'>" + esc(v.note) + "</textarea><div class='rvmeta'>" + rvMeta(v) + "</div></td>";
+    return "<tr class='rvrow " + cls + "' data-rvrow='" + esc(r.key) + "'><td class='rv' colspan='8'><div class='rvline'><label><input type='checkbox' data-rv='" + esc(r.key) + "'" + (v.reviewed ? " checked" : "") + "> Reviewed</label>" +
+      "<textarea data-rvnote='" + esc(r.key) + "' placeholder='Add a note...' maxlength='4000'>" + esc(v.note) + "</textarea><div class='rvmeta'>" + rvMeta(v) + "</div></div></td></tr>";
   }
+  function rowsFor(key) { return Array.prototype.filter.call($("rows").querySelectorAll("tr[data-row],tr[data-rvrow]"), function (t) { return (t.getAttribute("data-row") || t.getAttribute("data-rvrow")) === key; }); }
   function saveReview(key, body) {
     if (IS_DEV) return Promise.resolve();
     return BQEBoard.api("yodlee?action=review", { method: "POST", body: Object.assign({ id: key }, body) }).catch(showError);
@@ -657,7 +660,7 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
     var key = e.target.getAttribute("data-rv"); if (!key) return;
     var val = e.target.checked, now = new Date().toISOString(), cur = reviews[key] || {};
     reviews[key] = { reviewed: val, rat: val ? now : null, note: cur.note || "", by: viewerName(), at: now };
-    var tr = e.target.closest("tr"); if (tr) { tr.classList.toggle("reviewed", val); var m = tr.querySelector(".rvmeta"); if (m) m.innerHTML = rvMeta(rvOf(key)); }
+    rowsFor(key).forEach(function (t) { t.classList.toggle("reviewed", val); var m = t.querySelector(".rvmeta"); if (m) m.innerHTML = rvMeta(rvOf(key)); });
     saveReview(key, { reviewed: val });
   });
   $("rows").addEventListener("input", function (e) {
@@ -708,7 +711,7 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
       var s = r.s, z = r.z;
       var chips = r.flags.map(function (f) { return "<span class='chip " + f.sev + "'>" + ({ mismatch: "Mismatch", resolved: "Yodlee resolved", pending: "Waiting on BQE", replied: "Yodlee replied", quiet: "Quiet", unlinked: "No ticket", old: "30+ days", gone: "Not in Orbitus", nonumber: "No Yodlee #", multi: "Several SRs" }[f.code]) + "</span>"; }).join(" ");
       var rvNow = rvOf(r.key).reviewed, waiting = s && /^pending$/i.test(s.status);
-      var html = "<tr data-row='" + esc(r.key) + "' class='" + (waiting ? "wait " : "") + (rvNow ? "reviewed" : "") + "'>" +
+      var html = "<tr data-row='" + esc(r.key) + "' class='hasrv " + (waiting ? "wait " : "") + (rvNow ? "reviewed" : "") + "'>" +
         "<td>" + (s ? srLink(s) + "<div class='tiny muted'>" + esc((s.issue || "").replace("Link / Add Account or Refresh Related", "Link/refresh")) + "</div>" : "<span class='muted'>none</span>") + "</td>" +
         "<td>" + (s ? "<span class='st " + esc(s.status.toLowerCase().replace(/\s+/g, "")) + "'>" + esc(s.status) + "</span>" + (waiting ? "<br><span class='waitnote'>Waiting on BQE</span>" : "") + "<div class='tiny muted'>since " + esc(fmtDate(s.statusSince)) + "</div>" : "") + "</td>" +
         "<td>" + (z ? ticketLink(z) + "<div class='tiny muted'>" + esc(z.assignee || "Unassigned") + "</div>" : "<span class='muted'>none</span>") + "</td>" +
@@ -716,8 +719,8 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
         "<td>" + esc((z && z.org) || (s && s.customer) || "") + "<div class='tiny muted'>" + esc(s ? (s.site || "") + (s.errorCode ? " &middot; error " + s.errorCode : "") : "") + "</div></td>" +
         "<td>" + (r.ageDays != null ? Math.floor(r.ageDays) + "d" : "") + "</td>" +
         "<td>" + (s && s.lastYodleeAt ? esc(ago(s.lastYodleeAt)) + (s.lastYodleeText ? " <span class='toggle' data-exp='" + esc(r.key) + "'>" + (ui.expanded[r.key] ? "hide" : "read") + "</span>" : "") : "<span class='muted'>none</span>") + "</td>" +
-        "<td>" + chips + "</td>" + rvCell(r) + "</tr>";
-      if (ui.expanded[r.key] && s) html += "<tr class='expand'><td colspan='9'><div class='tiny'><b>Yodlee (" + esc(s.lastYodleeBy || "") + ", " + esc(fmtDate(s.lastYodleeAt)) + "):</b> " + esc(s.lastYodleeText || "") + "</div>" +
+        "<td>" + chips + "</td></tr>" + rvRow(r, (waiting ? "wait " : "") + (rvNow ? "reviewed" : ""));
+      if (ui.expanded[r.key] && s) html += "<tr class='expand'><td colspan='8'><div class='tiny'><b>Yodlee (" + esc(s.lastYodleeBy || "") + ", " + esc(fmtDate(s.lastYodleeAt)) + "):</b> " + esc(s.lastYodleeText || "") + "</div>" +
         (s.lastNote ? "<div class='tiny muted' style='margin-top:4px'><b>Latest BQE internal note (" + esc(fmtDate(s.lastNoteAt)) + "):</b> " + esc(s.lastNote) + "</div>" : "") +
         "<div class='tiny muted' style='margin-top:4px'>" + esc(s.subject || "") + " &middot; created by " + esc(s.createdBy || "") + " " + esc(fmtDate(s.createdAt)) + (r.z && r.z.subject ? " &middot; ticket: " + esc(r.z.subject) : "") + "</div></td></tr>";
       return html;
