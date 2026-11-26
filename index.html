@@ -259,11 +259,12 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
 
     <div class="kpi-grid" id="kpis"></div>
 
-    <section class="panel" id="assigneePanel">
-      <h2>Volume by assignee <span class="tiny muted" id="assigneeNote"></span></h2>
+    <details class="panel" id="assigneePanel" open>
+      <summary>Volume by assignee <span class="tiny muted" id="assigneeNote" style="font-family:var(--sans);font-weight:400"></span></summary>
+      <div style="height:10px"></div>
       <div class="legend"><span><i class="seg-pending"></i>Waiting on BQE (Pending)</span><span><i class="seg-open"></i>Open with Yodlee</span><span><i class="seg-resolved"></i>Resolved by Yodlee</span><span><i class="seg-ticket"></i>Ticket only, no SR</span></div>
       <div class="abars" id="assigneeBars"></div>
-    </section>
+    </details>
 
     <section class="panel" id="tableSection">
       <h2>Service requests and tickets</h2>
@@ -619,6 +620,9 @@ footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 2
       return "<div class='abar" + (ui.assignee === n ? " on" : "") + "' data-as='" + esc(n) + "'><div class='nm' title='" + esc(n) + "'>" + esc(n) + "</div><div class='tr' style='width:" + Math.max(4, o.total / max * 100) + "%'>" + segs + "</div><div class='tot'>" + o.total + "</div></div>";
     }).join("") : "<div class='muted'>Nothing to chart yet.</div>";
   }
+  // remember whether it is collapsed (this browser only)
+  if (load("yodleeWatch.assigneeOpen") === false) $("assigneePanel").open = false;
+  $("assigneePanel").addEventListener("toggle", function () { save("yodleeWatch.assigneeOpen", $("assigneePanel").open); });
   $("assigneeBars").addEventListener("click", function (e) {
     var b = e.target.closest("[data-as]"); if (!b) return;
     var n = b.getAttribute("data-as"); ui.assignee = ui.assignee === n ? null : n;
